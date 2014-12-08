@@ -13,6 +13,7 @@ Option #2:  $67
 - USB Webcam with UVC support [an example](http://www.ebay.com/itm/380403845897?_trksid=p2055119.m1438.l2649&ssPageName=STRK%3AMEBIDX%3AIT)  ~$9
 - Processor with only 1 usb master bus [an example](http://www.ebay.com/itm/Olimex-iMX233-OLINUXINO-Micro-linux-computer-ARM926J-alternative-to-Raspberry-Pi-/271109788909?pt=UK_BOI_Electrical_Components_Supplies_ET&hash=item3f1f6714ed) ~$39
 - High Speed Serial to WIFI Adapter [an example](http://www.ebay.com/itm/WIFI232-B-RS232-To-WIFI-UART-Serial-To-Wireless-Control-Module-Adapter-Convertor-/251293811560?pt=LH_DefaultDomain_0&hash=item3a82474368) ~$19
+- Note: It might be possible to reconfigure this option with an I2C camera (640x480, but only $6) and a USB WIFI adapter $9.  However, this would require low level I2C programing and ~10Mbps bandwidth vs. the 1-2Mbps above.
     
 Option #3: $62-$89
 - IP Camera [an example](http://www.ebay.com/itm/161287999991?_trksid=p2055119.m1438.l2649&ssPageName=STRK%3AMEBIDX%3AIT) ~$36
