@@ -43,14 +43,13 @@ To see run the code and open a browser and point it at `http://RASPBERRYPI_IP:80
 	```
 	----
 	
-	
-	## Method 2 - Websockets streaming with ffmpeg
 
+## Method 2 - Websockets streaming with ffmpeg
 This method requires a server the accept the streaming output from the Raspberry Pi and then broadcasts it over  web sockets to browsers. The instruction for setting up this streaming server can be found here [https://github.com/wilblack/ardyh-streamer](https://github.com/wilblack/ardyh-streamer)
 
 ###Results
 * I was able to stream 320x240 over the Internet with about ~0.5 seconds of lag for over 30 mins using about ~78% CPU.
-* I was able to stream 640x480 over the Internet with about ??? for ?? mins 
+* Streaming at 640x480 over the Internet didn't really work. The lag just kept increasing and was well over a minute 1 after only a couple of minutes. 
 
 ###Instructions 
 
