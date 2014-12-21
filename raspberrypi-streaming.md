@@ -46,8 +46,15 @@ To see run the code and open a browser and point it at `http://RASPBERRYPI_IP:80
 	
 	## Method 2 - Websockets streaming with ffmpeg
 
+This method requires a server the accept the streaming output from the Raspberry Pi and then broadcasts it over  web sockets to browsers. The instruction for setting up this streaming server can be found here [https://github.com/wilblack/ardyh-streamer](https://github.com/wilblack/ardyh-streamer)
 
-1. On the Raspberry Pi Build and configure [ffmpeg](http://ffmpeg.org/) on the Rapsberry Pi. It takes a while. I followed the instructions [here](http://sirlagz.net/2012/08/04/how-to-stream-a-webcam-from-the-raspberry-pi/). It takes a while. Below are the steps from that link.
+###Results
+* I was able to stream 320x240 over the Internet with about ~0.5 seconds of lag for over 30 mins using about ~78% CPU.
+* I was able to stream 640x480 over the Internet with about ??? for ?? mins 
+
+###Instructions 
+
+1. On the Raspberry Pi build and configure [ffmpeg](http://ffmpeg.org/). It takes a while (~3hrs). I followed the instructions [here](http://sirlagz.net/2012/08/04/how-to-stream-a-webcam-from-the-raspberry-pi/). Below are the steps from that link.
  
   0. Make sure the camera is enabled on the Pi.
   
@@ -71,18 +78,20 @@ To see run the code and open a browser and point it at `http://RASPBERRYPI_IP:80
    ```
 
   To test this run 
-  `raspivid -t 5000 -w 960 -h 540 -fps 25 -b 500000 -vf -o - | /usr/src/ffmpeg/ffmpeg -i - -vcodec copy -an -r 25 -f flv test.flv`. 
-  
-  NOTE: Still need to add `ffmpeg` to the path.
-  
-2. On the socket server install the stream-server.js script from https://github.com/phoboslab/jsmpeg
+  `raspivid -t 5000 -w 960 -h 540 -fps 25 -b 500000 -vf -o - | ffmpeg -i - -vcodec copy -an -r 25 -f flv test.flv`. 
+  IF you get an error about `ffmpeg` add it to your path. #TODO Add instruction for adding ffmpeg to the path. 
+   
+2. Set up and start the streaming server. This can be local or over the Internet.  [Instructions for setting up the streaming server](https://github.com/wilblack/ardyh-streamer). Once everything is installed start your server with a secret password.
 	
     ```
-    npm install ws
-    node stream-server.js yourpassword
+    node stream-server.js <your-password>
     ```
+     
+     Note the IP address it is listening on. 
+
+
 3. Then on the Raspberry Pi start the camera.
 	```
-	ffmpeg -s 320x240 -f video4linux2 -i /dev/video0 -f mpeg1video -b 800k -r 30 http://localhost:8082/password/320/240/
+	ffmpeg -s 320x240 -f video4linux2 -i /dev/video0 -f mpeg1video -b 800k -r 30 http://<domain:port>/<your-password>/320/240/
 
 	```
