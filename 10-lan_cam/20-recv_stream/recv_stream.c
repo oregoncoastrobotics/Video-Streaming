@@ -3,7 +3,7 @@ recv_stream written by Daniel Wirick 12-28-14 as a tcp client to receive video f
 
 This program can be used and distributed without restrictions.
 
-Version: 0.1
+Version: 0.2
 */
 
 //Standard Imports
@@ -24,18 +24,28 @@ Version: 0.1
 
 #define IN_BUFF_SIZE 614400
 #define OUT_BUFF_SIZE 921600
+#define SERVER_SOCKET 27777
+#define SERVER_IP "192.168.1.115"
 
 //Video Encodings, only set one to 1 the rest should be 0
 #define RGBR 0
 #define RGBP 0
 #define YUVP 0
-#define DUMB 1
+#define YUYV 1
+#define DUMB 0
+
+//All RGB values need to be between 0 and 255
+#define CLIP(X) ( (X) > 255 ? 255 : (X) < 0 ? 0 : X)
 
 // YCbCr -> RGB
-#define CLIP(X) ( (X) > 255 ? 255 : (X) < 0 ? 0 : X)
 #define CYCbCr2R(Y, Cb, Cr) CLIP( Y + ( 91881 * Cr >> 16 ) - 179 )
 #define CYCbCr2G(Y, Cb, Cr) CLIP( Y - (( 22544 * Cb + 46793 * Cr ) >> 16) + 135)
 #define CYCbCr2B(Y, Cb, Cr) CLIP( Y + (116129 * Cb >> 16 ) - 226 )
+
+//YUYV -> RGB
+#define CYUYV2R(c, e)    CLIP(( 298 * c + 409 * e + 128) >> 8); // red
+#define CYUYV2G(c, d, e) CLIP(( 298 * c - 100 * d - 208 * e + 128) >> 8) // green
+#define CYUYV2B(c, d)    CLIP(( 298 * c + 516 * d + 128) >> 8) // blue
 
 struct buffer 
 {
@@ -65,8 +75,8 @@ static void init_net (void) //Need to update for receiving
 	memset((char *)&serv_addr, 0, sizeof(serv_addr)); 
 	serv_addr.sin_family = AF_INET;   //Network type
 	//serv_addr.sin_addr.s_addr = htonl(atol()); //expects long integer
-	serv_addr.sin_port = htons(1234);
-	if (0 == inet_pton(AF_INET, "192.168.1.115", &(serv_addr.sin_addr.s_addr))) //&(sa.sin_addr)))
+	serv_addr.sin_port = htons(SERVER_SOCKET);
+	if (0 == inet_pton(AF_INET, SERVER_IP, &(serv_addr.sin_addr.s_addr))) //&(sa.sin_addr)))
 	{
 		errno_exit("cannot set server address");
 		return;
@@ -156,6 +166,37 @@ static void DUMB_to_RGB3 (uint8_t* out, const uint8_t* in, int in_size)
 	        out[0] = in[0];
 	        out[1] = in[1];
 	        out[2] = 0;
+	}
+}
+
+static void YUYV_to_RGB3 (uint8_t* out, const uint8_t* in, int in_size)
+{
+
+	int x;
+	int Y1, U, Y2, V;
+	int c, d, e;
+
+	for (x = 0; x < in_size/4; x++, in += 4, out += 6)
+	{
+
+	        Y1 = in[0];
+		U = in [1];
+		Y2 = in [2];
+		V = in [3];
+
+		c = Y1 - 16;
+		d = U - 128;
+		e = V - 128;
+
+	        out[0] = CYUYV2R(c, e);
+	        out[1] = CYUYV2G(c, d, e);
+	        out[2] = CYUYV2B(c, d);
+		
+		c = Y2 - 16;
+
+	        out[0] = CYUYV2R(c, e);
+	        out[1] = CYUYV2G(c, d, e);
+	        out[2] = CYUYV2B(c, d);
 	}
 }
 
@@ -258,6 +299,7 @@ static void test_file (void)
 }*/
 
 //Need to negotiate with device on image size and format (use to decode and size buffer)
+//Need to let device know when socket will be closed?
 int main()
 {
 	int loopIsInfinite = 1;
@@ -281,6 +323,8 @@ int main()
 			YUVP_to_RGB3 (out_buff[0].start, in_buff[0].start, in_buff[0].length);
 		if (DUMB)
 			DUMB_to_RGB3 (out_buff[0].start, in_buff[0].start, in_buff[0].length);
+		if (YUYV)
+			YUYV_to_RGB3 (out_buff[0].start, in_buff[0].start, in_buff[0].length);
 		//fprintf(stderr, "sending image data\n");
 		send_image ();
 	}
